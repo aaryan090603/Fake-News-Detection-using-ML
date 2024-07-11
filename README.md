@@ -1,151 +1,108 @@
 # Fake-News-Detection-using-ML
-Table of Contents
-Importing the Dependencies
-About the Dataset
-Downloading Stopwords
-Printing Stopwords
-Loading the Dataset
-Inspecting the Data
-Handling Missing Values
-Merging Author and Title
-Separating Features and Labels
-Stemming
-Applying Stemming
-Preparing Data for Training
-Text Vectorization
-Splitting the Data
-Model Training
-Model Evaluation
-1. Importing the Dependencies
-In this section, we import all the necessary libraries for data manipulation, natural language processing (NLP), and machine learning.
+Here's a comprehensive explanation of the README file , outlining each part of the fake news detection project using the dataset.
 
-python
-Copy code
-import numpy as np
-import pandas as pd
-import re
-from nltk.corpus import stopwords
-from nltk.stem.porter import PorterStemmer
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score
-2. About the Dataset
-The dataset used in this project contains the following columns:
+---
 
-id: Unique identifier for each news article.
-title: The title of the news article.
-author: The author of the news article.
-text: The main content of the article, which could be incomplete.
-label: Indicates whether the news article is real (0) or fake (1).
-3. Downloading Stopwords
-Stopwords are commonly used words that are usually removed during text processing.
+# Fake News Detection
 
-python
-Copy code
-import nltk
-nltk.download('stopwords')
-4. Printing Stopwords
-This code prints the list of English stopwords.
+## Table of Contents
 
-python
-Copy code
-print(stopwords.words('english'))
-5. Loading the Dataset
-We load the dataset into a Pandas DataFrame.
+1. [Introduction](#introduction)
+2. [Dataset Description](#dataset-description)
+3. [Data Preprocessing](#data-preprocessing)
+4. [Model Building](#model-building)
+5. [Model Training](#model-training)
+6. [Model Evaluation](#model-evaluation)
+7. [Prediction](#prediction)
+8. [Conclusion](#conclusion)
 
-python
-Copy code
-news_dataset = pd.read_csv('/content/train.csv')
-6. Inspecting the Data
-We inspect the shape of the dataset and print the first few rows to understand its structure.
+## Introduction
 
-python
-Copy code
-news_dataset.shape
-python
-Copy code
-news_dataset.head()
-7. Handling Missing Values
-We count the number of missing values in each column and then replace them with empty strings.
+Fake news detection is a crucial task in today's digital age, where misinformation can spread rapidly. This project aims to classify news articles as real or fake using machine learning techniques. We use the TF-IDF vectorizer and the Passive Aggressive Classifier for this purpose.
 
-python
-Copy code
-news_dataset.isnull().sum()
-python
-Copy code
-news_dataset = news_dataset.fillna('')
-8. Merging Author and Title
-We combine the author and title columns to create a new content column.
+## Dataset Description
 
-python
-Copy code
-news_dataset['content'] = news_dataset['author'] + ' ' + news_dataset['title']
-9. Separating Features and Labels
-We separate the features (input data) and labels (output data).
+The dataset used in this project consists of news articles with the following columns:
+- `id`: Unique identifier for each article
+- `title`: Title of the article
+- `author`: Author of the article
+- `text`: Full text of the article
+- `label`: Label indicating whether the news is real or fake (1: fake, 0: real)
 
-python
-Copy code
-X = news_dataset.drop(columns='label', axis=1)
-Y = news_dataset['label']
-10. Stemming
-Stemming reduces words to their root form. For example, "running" and "runner" both reduce to "run".
+## Data Preprocessing
 
-python
-Copy code
-port_stem = PorterStemmer()
+Before training the model, we need to preprocess the data. This involves handling missing values and converting the text data into numerical format using the TF-IDF vectorizer.
 
-def stemming(content):
-    stemmed_content = re.sub('[^a-zA-Z]', ' ', content)
-    stemmed_content = stemmed_content.lower()
-    stemmed_content = stemmed_content.split()
-    stemmed_content = [port_stem.stem(word) for word in stemmed_content if not word in stopwords.words('english')]
-    stemmed_content = ' '.join(stemmed_content)
-    return stemmed_content
-11. Applying Stemming
-We apply the stemming function to the content column.
+### Handling Missing Values
 
-python
-Copy code
-news_dataset['content'] = news_dataset['content'].apply(stemming)
-12. Preparing Data for Training
-We separate the processed content and label columns into feature and target variables.
+```python
+data = data.dropna()
+```
+We drop any rows with missing values to ensure our dataset is clean and complete.
 
-python
-Copy code
-X = news_dataset['content'].values
-Y = news_dataset['label'].values
-13. Text Vectorization
-We convert the text data into numerical data using TF-IDF vectorization.
+### Text Vectorization
 
-python
-Copy code
-vectorizer = TfidfVectorizer()
-X = vectorizer.fit_transform(X)
-14. Splitting the Data
-We split the data into training and testing sets.
+```python
+tfidf_vectorizer = TfidfVectorizer(stop_words='english', max_df=0.7)
+tfidf_train = tfidf_vectorizer.fit_transform(x_train)
+tfidf_test = tfidf_vectorizer.transform(x_test)
+```
+We use the `TfidfVectorizer` to convert the text data into numerical format. This helps the machine learning model understand the text.
 
-python
-Copy code
-X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, stratify=Y, random_state=2)
-15. Model Training
-We train a logistic regression model on the training data.
+## Model Building
 
-python
-Copy code
-model = LogisticRegression()
-model.fit(X_train, Y_train)
-16. Model Evaluation
-We evaluate the model's performance on the training and testing sets using accuracy.
+We use the Passive Aggressive Classifier for this classification task. This model is known for its efficiency in binary classification tasks.
 
-python
-Copy code
-train_predictions = model.predict(X_train)
-train_accuracy = accuracy_score(Y_train, train_predictions)
-print(f"Training Accuracy: {train_accuracy}")
+```python
+pac = PassiveAggressiveClassifier(max_iter=50)
+```
+The Passive Aggressive Classifier is initialized with a maximum of 50 iterations.
 
-test_predictions = model.predict(X_test)
-test_accuracy = accuracy_score(Y_test, test_predictions)
-print(f"Testing Accuracy: {test_accuracy}")
+## Model Training
 
-This concludes the detailed explanation of the code with a table of contents and descriptions for each section. 
+We train the model using the training data.
+
+```python
+pac.fit(tfidf_train, y_train)
+```
+The `fit` method is used to train the model on the TF-IDF transformed training data and corresponding labels.
+
+## Model Evaluation
+
+After training, we evaluate the model's performance using accuracy and confusion matrix.
+
+### Accuracy Score
+
+```python
+y_pred = pac.predict(tfidf_test)
+score = accuracy_score(y_test, y_pred)
+print(f'Accuracy: {round(score*100,2)}%')
+```
+We predict the labels for the test data and calculate the accuracy score.
+
+### Confusion Matrix
+
+```python
+confusion_matrix(y_test, y_pred, labels=[0, 1])
+```
+The confusion matrix helps us understand the model's performance in detail by showing true positives, true negatives, false positives, and false negatives.
+
+## Prediction
+
+We can use the trained model to predict whether new articles are real or fake.
+
+```python
+new_text = ["Sample news article text"]
+tfidf_new = tfidf_vectorizer.transform(new_text)
+prediction = pac.predict(tfidf_new)
+print(prediction)
+```
+We transform the new text data using the TF-IDF vectorizer and use the trained model to make predictions.
+
+## Conclusion
+
+This project demonstrates the use of machine learning for fake news detection. The Passive Aggressive Classifier, combined with the TF-IDF vectorizer, provides a robust solution for classifying news articles as real or fake.
+
+---
+
+This README provides a comprehensive overview of the fake news detection project, including detailed explanations of each step and code snippet. This should serve as a useful guide for anyone looking to understand or replicate the project.
